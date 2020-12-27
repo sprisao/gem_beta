@@ -71,17 +71,20 @@ function VideoUploadPage() {
 
         let formData = new FormData;
         const config = {
-            header: {'content-type': 'multipart/form-data'}
+            header: {
+                'content-type': 'multipart/form-data'
+            }
         }
         formData.append("file", files[0])
 
         console.log(files)
 
-        Axios.post('/api/uploadfiles', formData, config)
+        Axios
+            .post('/api/video/uploadfiles', formData, config)
             .then(response => {
-                if(response.data.success) {
+                if (response.data.success) {
                     console.log(response.data)
-                } else{
+                } else {
                     alert('비디오 업로드를 실패했습니다.')
                 }
             })
