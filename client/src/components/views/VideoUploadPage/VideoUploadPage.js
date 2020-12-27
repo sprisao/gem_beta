@@ -1,20 +1,94 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {
     Typography,
     Button,
     Form,
-    message,
+    Message,
     Input,
     Icon
 } from 'antd';
 import Dropzone from 'react-dropzone';
+import Axios from 'axios';
 
 const {TextArea} = Input;
 const {Title} = Typography;
 
-function VideoUploadPage() {
-    return (
+const PrivateOptions = [
+    {
+        value: 0,
+        label: "Private"
+    }, {
+        value: 1,
+        label: "Public"
+    }
+]
 
+const CategoryOptions = [
+    {
+        value: 0,
+        label: "Film & Animation"
+    }, {
+        value: 1,
+        label: "Autos & Vehicles"
+    }, {
+        value: 2,
+        label: "Film & Animation"
+    }, {
+        value: 3,
+        label: "Autos & Vehicles"
+    }
+
+]
+
+function VideoUploadPage() {
+
+    const [VideoTitle, setVideoTitle] = useState("")
+    const [Description, setDescription] = useState("")
+    const [Private, setPrivate] = useState(0)
+    const [Category, setCategory] = useState("Film & Animation")
+
+    const onTitleChange = (e) => {
+        console.log(e.currentTarget)
+        setVideoTitle(e.currentTarget.value)
+    }
+
+    const onDescriptionChange = (e) => {
+        setDescription(e.currentTarget.value)
+
+    }
+
+    const onPrivateChange = (e) => {
+        setPrivate(e.currentTarget.value)
+
+    }
+
+    const onCategoryChange = (e) => {
+        setCategory(e.currentTarget.value)
+
+    }
+
+    const onDrop = (files) => {
+
+        let formData = new FormData;
+        const config = {
+            header: {'content-type': 'multipart/form-data'}
+        }
+        formData.append("file", files[0])
+
+        console.log(files)
+
+        Axios.post('/api/uploadfiles', formData, config)
+            .then(response => {
+                if(response.data.success) {
+                    console.log(response.data)
+                } else{
+                    alert('비디오 업로드를 실패했습니다.')
+                }
+            })
+
+    }
+
+    return (
         <div
             style={{
                 maxWidth: '700px',
@@ -28,13 +102,37 @@ function VideoUploadPage() {
                 <Title level={2}>Upload Video</Title>
             </div>
 
-            <Form onSubmit="onSubmit">
+            <Form>
                 <div
                     style={{
                         display: 'flex',
                         justifyContent: 'space-between'
                     }}>
                     {/* Drop zone */}
+
+                    <Dropzone onDrop={onDrop} multiple={true} maxSize={10000000000}>
+                        {
+                            ({getRootProps, getInputProps}) => (
+                                <div
+                                    style={{
+                                        width: '300px',
+                                        height: '240px',
+                                        border: '1px solid lightgray',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                    {...getRootProps()}>
+                                    <input {...getInputProps()}/>
+                                    <Icon
+                                        type="plus"
+                                        style={{
+                                            fontSize: '3rem'
+                                        }}/>
+                                </div>
+                            )
+                        }
+                    </Dropzone>
 
                     {/* Thumbnail */}
 
@@ -47,23 +145,37 @@ function VideoUploadPage() {
                 <br/>
                 <br/>
                 <label>Title</label>
-                <Input onChange="onChange" value="value"/>
+                <Input onChange={onTitleChange} value={VideoTitle}/>
                 <br/>
                 <br/>
                 <label>Description</label>
-                <TextArea onChange="onChange" value="value"/>
+                <TextArea onChange={onDescriptionChange} value={Description}/>
                 <br/>
                 <br/>
 
-                <select onChange="onChange">
-                    <option key="key" value="value"></option>
+                <select onChange={onPrivateChange}>
+                    {
+                        PrivateOptions.map(
+                            (item, index) => <option key={index} value={item.value}>{item.label}</option>
+                        )
+                    }
                 </select>
 
-                <select onChange="onChange">
-                    <option key="key" value="value"></option>
+                <br/>
+                <br/>
+
+                <select onChange={onCategoryChange}>
+                    {
+                        CategoryOptions.map(
+                            (item, index) => <option key={index} value={item.value}>{item.label}</option>
+                        )
+                    }
                 </select>
 
-                <Button type="primary" size="lager" onClick="onClick">
+                <br/>
+                <br/>
+
+                <Button type="primary" size="large">
                     submit
                 </Button>
 
