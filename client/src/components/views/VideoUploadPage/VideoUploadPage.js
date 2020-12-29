@@ -5,14 +5,18 @@ import {
     Form,
     Message,
     Input,
-    Icon
+    Icon,
+    message
 } from 'antd';
 import Dropzone from 'react-dropzone';
 import Axios from 'axios';
-
+import {useSelector} from 'react-redux';
+import {set} from 'mongoose';
 
 const {TextArea} = Input;
 const {Title} = Typography;
+
+//map 사용을 위한 정의 부분
 
 const PrivateOptions = [
     {
@@ -40,9 +44,12 @@ const CategoryOptions = [
     }
 
 ]
+// 맵사용을 위한 정의 부분
 
-function VideoUploadPage() {
-
+function VideoUploadPage(props) {
+    // user 변수에 user에 관한 모든 정보가 담겨 있다.
+    const user = useSelector(state => state.user)
+    // 여기에 모든 user정보가 담겨있다!!!
     const [VideoTitle, setVideoTitle] = useState("")
     const [Description, setDescription] = useState("")
     const [Private, setPrivate] = useState(0)
@@ -89,29 +96,65 @@ function VideoUploadPage() {
                 if (response.data.success) {
                     console.log(response.data)
 
-
                     let variable = {
-                        url:response.data.url,
+                        url: response.data.url,
                         fileName: response.data.fileName
                     }
 
                     setFilePath(response.data.url)
 
-                    Axios.post('/api/video/thumbnail', variable)
-                    .then(response => {
-                        if(response.data.success) {
-                            
-                            setDuration(response.data.fileDuration)
-                            setThumbnailPath(response.data.url)
-                        } else {
-                            alert('썸네일 생성에 실패 했습니다.')
-                        }
-                    })
+                    Axios
+                        .post('/api/video/thumbnail', variable)
+                        .then(response => {
+                            if (response.data.success) {
+
+                                setDuration(response.data.fileDuration)
+                                setThumbnailPath(response.data.url)
+                            } else {
+                                alert('썸네일 생성에 실패 했습니다.')
+                            }
+                        })
                 } else {
                     alert('비디오 업로드를 실패했습니다.')
                 }
             })
 
+    }
+
+    const onSubmit = (e) => {
+        //클릭을 하려고 했던것을 방지할 수 있다.
+        e.preventDefault();
+
+        const variables = {
+            writer: user.userData._id,
+            title: VideoTitle,
+            description: Description,
+            privacy: Private,
+            filePath: FilePath,
+            category: Category,
+            duration: Duration,
+            thumbnail: ThumbnailPath
+        }
+        Axios
+            .post('/api/video/uploadVideo', variables) // 이 부분을 작성하고 이제 router에서 받도록 route> video.js로 가야쥐 !//
+            .then(response => {
+
+                if (response.data.success) {
+
+                    message.success('성공적으로 업로드했습니다.')
+
+                    setTimeout(() => {
+
+                        props
+                            .history
+                            .push('/')
+
+                    }, 3000);
+
+                } else {
+                    alert('비디오 업로드에 실패 했습니다.')
+                }
+            })
     }
 
     return (
@@ -128,7 +171,7 @@ function VideoUploadPage() {
                 <Title level={2}>Upload Video</Title>
             </div>
 
-            <Form>
+            <Form onSubmit={onSubmit}>
                 <div
                     style={{
                         display: 'flex',
@@ -162,13 +205,12 @@ function VideoUploadPage() {
 
                     {/* Thumbnail */}
 
-                    {ThumbnailPath &&
-                        <div>
-                            <img src={`http://localhost:5000/${ThumbnailPath}`} alt="thumbnail"/>
-                        </div>
-                    
-                    }
+                    {
+                        ThumbnailPath && <div>
+                                <img src={`http://localhost:5000/${ThumbnailPath}`} alt="thumbnail"/>
+                            </div>
 
+                    }
 
                 </div>
 
@@ -205,7 +247,7 @@ function VideoUploadPage() {
                 <br/>
                 <br/>
 
-                <Button type="primary" size="large">
+                <Button type="primary" size="large" onClick={onSubmit}>
                     submit
                 </Button>
 
