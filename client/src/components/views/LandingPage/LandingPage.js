@@ -38,7 +38,7 @@ function LandingPage() {
         var seconds = Math.floor((video.duration - minutes * 60)); 
 
         return <Col lg={6} md={8} xs={24}>
-            <a href={`/video/post/${video._id}`}>
+            <a href={`/video/${video._id}`}>
                 <div
                     style={{
                         position: 'relative'
@@ -55,8 +55,8 @@ function LandingPage() {
                             : {seconds}
                         </span>
                     </div>
+        
                 </div>
-            </a>
             <br/>
             <Meta
                 avatar={<Avatar src = {
@@ -74,6 +74,7 @@ function LandingPage() {
             </span>
             -
             <span>{moment(video.createdAt).format('YYYY-MM-DD HH:mm:ss')} </span>
+            </a>
         </Col>
 
     })
